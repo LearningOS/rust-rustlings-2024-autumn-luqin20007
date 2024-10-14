@@ -2,7 +2,6 @@
 	single linked list merge
 	This problem requires you to merge two ordered singly linked lists into one ordered singly linked list
 */
-// I AM NOT DONE
 
 use std::fmt::{self, Display, Formatter};
 use std::ptr::NonNull;
@@ -29,13 +28,13 @@ struct LinkedList<T> {
     end: Option<NonNull<Node<T>>>,
 }
 
-impl<T> Default for LinkedList<T> {
+impl<T: std::cmp::PartialOrd> Default for LinkedList<T> {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl<T> LinkedList<T> {
+impl<T: std::cmp::PartialOrd> LinkedList<T> {
     pub fn new() -> Self {
         Self {
             length: 0,
@@ -72,11 +71,45 @@ impl<T> LinkedList<T> {
 	pub fn merge(list_a:LinkedList<T>,list_b:LinkedList<T>) -> Self
 	{
 		//TODO
-		Self {
-            length: 0,
+        let mut res = Self {
+            length: list_a.length + list_b.length,
             start: None,
             end: None,
+        };
+        // 按顺序插入
+        let mut pa = list_a.start;
+        let mut pb = list_b.start;
+        while pa.is_some() || pb.is_some() {
+            if pa.is_some() && pb.is_some() {
+                let mut pc = None;
+                if unsafe { (*pa.unwrap().as_ptr()).val < (*pb.unwrap().as_ptr()).val } {
+                    pc = pa;
+                    pa = unsafe { (*pa.unwrap().as_ptr()).next };
+                } else {
+                    pc = pb;
+                    pb = unsafe { (*pb.unwrap().as_ptr()).next };
+                };
+                match res.end {
+                    None => {
+                        res.start = pc;
+                        res.end = pc;
+                    },
+                    Some(p) => unsafe {
+                        (*p.as_ptr()).next = pc;
+                        res.end = pc;
+                    }
+                }
+            } else if pa.is_some() {
+                unsafe { (*res.end.unwrap().as_ptr()).next = pa; }
+                res.end = list_a.end;
+                pa = None
+            } else if pb.is_some() {
+                unsafe { (*res.end.unwrap().as_ptr()).next = pb; }
+                res.end = list_b.end;
+                pb = None
+            }
         }
+        res
 	}
 }
 

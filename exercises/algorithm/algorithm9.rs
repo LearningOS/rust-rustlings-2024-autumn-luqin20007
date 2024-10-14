@@ -2,14 +2,13 @@
 	heap
 	This question requires you to implement a binary heap function
 */
-// I AM NOT DONE
 
 use std::cmp::Ord;
 use std::default::Default;
 
 pub struct Heap<T>
 where
-    T: Default,
+    T: Default + std::fmt::Debug,
 {
     count: usize,
     items: Vec<T>,
@@ -18,7 +17,7 @@ where
 
 impl<T> Heap<T>
 where
-    T: Default,
+    T: Default + std::fmt::Debug,
 {
     pub fn new(comparator: fn(&T, &T) -> bool) -> Self {
         Self {
@@ -38,6 +37,36 @@ where
 
     pub fn add(&mut self, value: T) {
         //TODO
+        self.count += 1;
+        self.items.push(value);
+        println!("{:?}", &self.items);
+        self.up(self.count);
+        println!("----");
+    }
+
+    fn up(&mut self, x: usize) {
+        let p = self.parent_idx(x);
+        if x > 1 && (self.comparator)(&self.items[x], &self.items[p]) {
+            self.items.swap(x, p);
+            self.up(p);
+        }
+        println!("{:?}", &self.items);
+    }
+
+    fn down(&mut self, x: usize) {
+        let mut t = x;
+        let l = self.left_child_idx(x);
+        let r = self.right_child_idx(x);
+        if l <= self.count && (self.comparator)(&self.items[l], &self.items[t]) {
+            t = l;
+        }
+        if r <= self.count && (self.comparator)(&self.items[r], &self.items[t]) {
+            t = r;
+        }
+        if t != x {
+            self.items.swap(x, t);
+            self.down(t);
+        }
     }
 
     fn parent_idx(&self, idx: usize) -> usize {
@@ -57,14 +86,14 @@ where
     }
 
     fn smallest_child_idx(&self, idx: usize) -> usize {
-        //TODO
+        //TODO 有啥用?
 		0
     }
 }
 
 impl<T> Heap<T>
 where
-    T: Default + Ord,
+    T: Default + Ord + std::fmt::Debug,
 {
     /// Create a new MinHeap
     pub fn new_min() -> Self {
@@ -79,13 +108,25 @@ where
 
 impl<T> Iterator for Heap<T>
 where
-    T: Default,
+    T: Default + std::fmt::Debug,
 {
     type Item = T;
 
     fn next(&mut self) -> Option<T> {
         //TODO
-		None
+        if self.is_empty() {
+            None
+        } else {
+            // 取出第一个
+            self.items.swap(1, self.count);
+            let v = self.items.pop().unwrap();
+            self.count -= 1;
+            if self.count > 0 {
+                // 顺延
+                self.down(1);
+            }
+            Some(v)
+        }
     }
 }
 
@@ -95,7 +136,7 @@ impl MinHeap {
     #[allow(clippy::new_ret_no_self)]
     pub fn new<T>() -> Heap<T>
     where
-        T: Default + Ord,
+        T: Default + Ord + std::fmt::Debug,
     {
         Heap::new(|a, b| a < b)
     }
@@ -107,7 +148,7 @@ impl MaxHeap {
     #[allow(clippy::new_ret_no_self)]
     pub fn new<T>() -> Heap<T>
     where
-        T: Default + Ord,
+        T: Default + Ord + std::fmt::Debug,
     {
         Heap::new(|a, b| a > b)
     }

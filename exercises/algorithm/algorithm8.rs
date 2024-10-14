@@ -1,8 +1,7 @@
 /*
 	queue
-	This question requires you to use queues to implement the functionality of the stac
+	This question requires you to use queues to implement the functionality of the stack
 */
-// I AM NOT DONE
 
 #[derive(Debug)]
 pub struct Queue<T> {
@@ -56,26 +55,58 @@ pub struct myStack<T>
 {
 	//TODO
 	q1:Queue<T>,
-	q2:Queue<T>
+	q2:Queue<T>,
+    flip: bool,
 }
 impl<T> myStack<T> {
     pub fn new() -> Self {
         Self {
 			//TODO
 			q1:Queue::<T>::new(),
-			q2:Queue::<T>::new()
+			q2:Queue::<T>::new(),
+            flip: false,
         }
     }
     pub fn push(&mut self, elem: T) {
         //TODO
+        if self.flip {
+            self.q2.enqueue(elem);
+        } else {
+            self.q1.enqueue(elem);
+        }
     }
     pub fn pop(&mut self) -> Result<T, &str> {
         //TODO
+        if !self.is_empty() {
+            self.flip = !self.flip;
+            if self.flip {
+                // 数据存于 q1
+                let mut vt = self.q1.dequeue().unwrap();
+                while !self.q1.is_empty() {
+                    self.q2.enqueue(vt);
+                    vt = self.q1.dequeue().unwrap();
+                }
+                return Ok(vt);
+            } else {
+                // 数据存于 q2
+                let mut vt = self.q2.dequeue().unwrap();
+                while !self.q2.is_empty() {
+                    self.q1.enqueue(vt);
+                    vt = self.q2.dequeue().unwrap();
+                }
+                return Ok(vt);
+            }
+        }
 		Err("Stack is empty")
     }
     pub fn is_empty(&self) -> bool {
 		//TODO
-        true
+        // true
+        if self.flip {
+            self.q2.is_empty()
+        }  else {
+            self.q1.is_empty()
+        }
     }
 }
 
